@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2, User, Bot } from 'lucide-react';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '/api';
 
 interface Message {
     id: number;
@@ -80,9 +80,17 @@ export default function Chatbot() {
 
         } catch (error: any) {
             console.error('Error detallado en Chatbot:', error);
+            let errorMessage = "¡Ups! No pude conectarme con el servidor. ¿Podrías intentar de nuevo en un momento? 🍫";
+
+            if (error.message === 'Failed to fetch') {
+                errorMessage = "BombónBot está descansando o fuera de línea. Por favor, asegúrate de que el servidor esté encendido. 😴";
+            } else if (error.message) {
+                errorMessage = `Hubo un inconveniente: ${error.message}`;
+            }
+
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
-                text: `Lo siento, hubo un problema: ${error.message}`,
+                text: errorMessage,
                 sender: 'bot'
             }]);
         } finally {

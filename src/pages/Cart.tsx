@@ -7,7 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Trash2, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
 
 // URL del backend - cambiar en producción
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '/api';
 
 export default function Cart() {
     const { items, removeFromCart, updateQuantity, cartTotal } = useCart();

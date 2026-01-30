@@ -139,9 +139,13 @@ app.get('/health', (req, res) => {
 });
 
 async function findLocalAnswer(message) {
-    const msg = message.toLowerCase();
+    // Función para normalizar texto (quitar acentos/tildes)
+    const normalize = (text) =>
+        text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const msgNormalized = normalize(message);
+
     try {
-        // Traemos todo el conocimiento de la tabla
         const { data: knowledge } = await supabase
             .from('chatbot_knowledge')
             .select('*');
@@ -149,8 +153,14 @@ async function findLocalAnswer(message) {
         if (!knowledge) return null;
 
         for (const item of knowledge) {
-            // item.keywords es un array de strings almacenado en Supabase
-            if (item.keywords.some(k => msg.includes(k.toLowerCase()))) {
+            // Verificamos si alguna palabra clave normalizada está presente en el mensaje normalizado
+            const match = item.keywords.some(k => {
+                const kNormalized = normalize(k);
+                return msgNormalized.includes(kNormalized);
+            });
+
+            if (match) {
+                console.log(`✨ Respuesta local encontrada por palabras clave: [${item.keywords.join(', ')}]`);
                 return item.answer;
             }
         }
@@ -165,7 +175,7 @@ async function findLocalAnswer(message) {
  * Endpoint para interactuar con Gemini AI
  */
 app.post('/chat', async (req, res) => {
-    const { message } = req.body;
+    const { message, history } = req.body;
     console.log('🤖 Chat Request:', message);
 
     // 1. Intentar respuesta local (Supabase Entrenamiento)
@@ -189,12 +199,19 @@ app.post('/chat', async (req, res) => {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // Prompt simple para evitar errores de historial
-        const prompt = `Responde como BombónBot, asistente de 'SOS Bombones' en Salta (Ibazeta 580). 
-        Tono: Argentino cálido y corto. 
-        Usuario: ${message}`;
+        // Construir contexto con el historial para que BombónBot tenga "memoria"
+        let context = "Responde como BombónBot, asistente de 'SOS Bombones' en Salta (Ibazeta 580). Tono: Argentino cálido y corto.\n\n";
 
-        const result = await model.generateContent(prompt);
+        if (history && history.length > 0) {
+            history.forEach(msg => {
+                const roleName = msg.role === 'user' ? 'Usuario' : 'BombónBot';
+                context += `${roleName}: ${msg.message}\n`;
+            });
+        }
+
+        context += `Usuario: ${message}\nBombónBot:`;
+
+        const result = await model.generateContent(context);
         const response = await result.response;
         const text = response.text();
 
