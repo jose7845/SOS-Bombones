@@ -1,5 +1,5 @@
 import Layout from '../components/Layout';
-import { Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import Chatbot from '../components/Chatbot';
 
 export default function Contact() {
