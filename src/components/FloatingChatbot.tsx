@@ -40,13 +40,6 @@ export default function FloatingChatbot() {
                     </div>
                 )}
 
-                {/* Tooltip */}
-                {!isOpen && (
-                    <div className="absolute right-20 bg-white text-brand-900 px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg border border-brand-50 pointer-events-none">
-                        ¡Hola! ¿Probás un bombón? 🍫
-                        <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-white border-r border-t border-brand-50 rotate-45"></div>
-                    </div>
-                )}
             </button>
         </div>
     );
